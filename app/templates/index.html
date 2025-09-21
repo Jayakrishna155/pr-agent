@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI PR Review Agent</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 1rem;
+            color: #2d3748;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header Styles */
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 3rem 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.9);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+            font-weight: 400;
+        }
+
+        /* Card Styles */
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 35px 70px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h4 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card p {
+            color: #4a5568;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        /* Button Styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(79, 70, 229, 0.4);
+            background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(5, 150, 105, 0.3);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(5, 150, 105, 0.4);
+            background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+        }
+
+        .login-btn {
+            display: block;
+            width: 100%;
+            margin-top: 1rem;
+            font-family: inherit;
+        }
+
+        /* Select Styles */
+        select {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            background: white;
+            color: #2d3748;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1.25rem;
+            font-family: inherit;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        /* Grid Layout */
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .code-block, .review-block {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 2px solid #e2e8f0;
+            padding: 2rem;
+            border-radius: 16px;
+            overflow: auto;
+            height: 65vh;
+            position: relative;
+        }
+
+        .code-block::before, .review-block::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .code-block::before {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .review-block::before {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+
+        .code-block h5, .review-block h5 {
+            color: #1a202c;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .review-results, .code-content {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #2d3748;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            min-height: calc(100% - 60px);
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f4f6;
+            border-radius: 50%;
+            border-top-color: #4f46e5;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Icons */
+        .icon {
+            width: 1.5rem;
+            height: 1.5rem;
+            vertical-align: middle;
+        }
+
+        .github-icon::before {
+            content: "⚡";
+            font-size: 1.25rem;
+        }
+
+        .code-icon::before {
+            content: "💻";
+            font-size: 1.25rem;
+        }
+
+        .review-icon::before {
+            content: "🤖";
+            font-size: 1.25rem;
+        }
+
+        .repo-icon::before {
+            content: "📁";
+            font-size: 1.25rem;
+        }
+
+        /* Alert Styles */
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            border-left: 4px solid;
+            font-weight: 500;
+        }
+
+        .alert-error {
+            background-color: #fef2f2;
+            border-color: #ef4444;
+            color: #dc2626;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header {
+                padding: 2rem 1rem;
+            }
+
+            .header h1 {
+                font-size: 2.5rem;
+            }
+
+            .header p {
+                font-size: 1.1rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .grid-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .code-block, .review-block {
+                height: 50vh;
+            }
+        }
+
+        /* Hide sections by default */
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Progress indicator */
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            border-radius: 2px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <div class="header">
+            <h1>AI PR Review Agent</h1>
+            <p>Connect with GitHub to get comprehensive, AI-powered code reviews for your repositories using advanced language models.</p>
+        </div>
+
+        <section id="login-section" class="section active">
+            <div class="card">
+                <h4><span class="github-icon"></span>Connect Your Git Account</h4>
+                <p>Choose your Git platform to securely authenticate and access your repositories.</p>
+                <select id="git-platform-select" style="margin-bottom: 1rem;">
+                    <option value="github">GitHub</option>
+                    <option value="github">GitLab</option>
+                    <option value="github">bitbucket</option>
+                </select>
+                <button class="btn-primary login-btn" id="login-btn">
+                    <span class="github-icon"></span>
+                    Login
+                </button>
+            </div>
+        </section>
+
+        <section id="repo-selection-section" class="section">
+            <div class="card">
+                <h4><span class="repo-icon"></span>Select a Repository to Review</h4>
+                <p>Choose a repository from your Git account to receive a comprehensive AI code review with insights and suggestions.</p>
+                <select id="repo-select">
+                    <option value="">Loading repositories...</option>
+                </select>
+                <button class="btn-secondary" onclick="startReview()">
+                    <span class="review-icon"></span>
+                    Start AI Review
+                </button>
+                <button class="btn-primary" onclick="logout()" style="margin-top: 2rem;">
+                    <span class="github-icon"></span>
+                    Logout
+                </button>
+            </div>
+        </section>
+
+        <section id="review-results-section" class="section">
+            <div class="card">
+                <h4><span class="code-icon"></span>Review Results for <span id="reviewed-repo"></span></h4>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <div class="grid-container">
+                    <div class="code-block">
+                        <h5><span class="code-icon"></span>Original Code</h5>
+                        <pre id="code-output" class="code-content">Fetching code...</pre>
+                    </div>
+                    <div class="review-block">
+                        <h5><span class="review-icon"></span>AI Review Analysis</h5>
+                        <div id="review-output" class="review-results">Review in progress... Please wait.</div>
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="window.location.reload()" style="margin-top: 2rem;">
+                    <span class="repo-icon"></span>
+                    Review Another Repository
+                </button>
+            </div>
+        </section>
+    </main>
+    <script>
+        const githubClientId = "Ov23liHp72cr7Y8UhOay";
+        const githubRedirectUri = "http://127.0.0.1:8000/api/auth/github/callback";
+        const gitlabClientId = "1b2c9a6fb1693dae40c6a29b3db71349c36bb12d02962868e9073a7ce5842751";
+        const gitlabRedirectUri = "http://127.0.0.1:8000/api/auth/gitlab/callback";
+    
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const platform = urlParams.get('platform');
+        
+        let reviewedRepoName = '';
+        let allReviewedFiles = {};
+
+        const loginButton = document.getElementById('login-btn');
+        const platformSelect = document.getElementById('git-platform-select');
+        
+        platformSelect.addEventListener('change', () => {
+            const selectedPlatform = platformSelect.value;
+            loginButton.textContent = `Login with ${selectedPlatform.charAt(0).toUpperCase() + selectedPlatform.slice(1)}`;
+        });
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        function showError(message) {
+            const existingAlert = document.querySelector('.alert-error');
+            if (existingAlert) existingAlert.remove();
+            
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-error';
+            alert.textContent = message;
+            
+            const activeSection = document.querySelector('.section.active .card');
+            activeSection.insertBefore(alert, activeSection.firstChild);
+        }
+
+        function updateProgress(percentage) {
+            const progressFill = document.getElementById('progress-fill');
+            if (progressFill) {
+                progressFill.style.width = percentage + '%';
+            }
+        }
+
+        if (token && platform) {
+            showSection('repo-selection-section');
+            fetchRepositories(token, platform);
+        }
+
+        function loginWithPlatform() {
+            const platform = document.getElementById('git-platform-select').value;
+            let authUrl = '';
+
+            if (platform === 'github') {
+                authUrl = `https://github.com/login/oauth/authorize?client_id=${githubClientId}&redirect_uri=${githubRedirectUri}&scope=repo`;
+            } else if (platform === 'gitlab') {
+                authUrl = `https://gitlab.com/oauth/authorize?client_id=${gitlabClientId}&redirect_uri=${gitlabRedirectUri}&response_type=code&scope=read_repository+api`;
+            } else {
+                showError(`Login for ${platform} is not yet implemented.`);
+                return;
+            }
+
+            window.location.href = authUrl;
+        }
+        
+        loginButton.addEventListener('click', loginWithPlatform);
+
+        async function fetchRepositories(userToken, userPlatform) {
+            const select = document.getElementById('repo-select');
+            select.innerHTML = '<option value="">Loading repositories...</option>';
+            
+            try {
+                const response = await fetch(`/api/repos?token=${userToken}&platform=${userPlatform}`);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || "Failed to fetch repositories.");
+                }
+                const data = await response.json();
+                select.innerHTML = '<option value="">-- Select a repository --</option>';
+                data.repos.forEach(repo => {
+                    const option = document.createElement('option');
+                    option.value = repo;
+                    option.textContent = repo;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                showError("Error fetching repositories: " + error.message);
+                select.innerHTML = '<option value="">Error loading repositories</option>';
+            }
+        }
+
+        async function startReview() {
+            const select = document.getElementById('repo-select');
+            const repoName = select.value;
+            const platform = urlParams.get('platform');
+            
+            if (!repoName) {
+                showError("Please select a repository.");
+                return;
+            }
+
+            showSection('review-results-section');
+            document.getElementById('reviewed-repo').textContent = repoName;
+            const reviewOutput = document.getElementById('review-output');
+            const codeOutput = document.getElementById('code-output');
+
+            reviewOutput.innerHTML = '<div class="loading"></div> Review in progress... Please wait.';
+            codeOutput.textContent = 'Fetching code...';
+
+            updateProgress(10);
+            setTimeout(() => {
+                document.getElementById('review-results-section').scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+
+            try {
+                updateProgress(30);
+                
+                const response = await fetch(`/api/review`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ repo_name: repoName, token: token, platform: platform })
+                });
+
+                updateProgress(60);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || "Review failed.");
+                }
+                
+                const data = await response.json();
+                updateProgress(80);
+                
+                let reviewResultsText = "";
+                let scoreDisplay = "";
+                
+                if (data.overall_review) {
+                    reviewResultsText = data.overall_review;
+                } else {
+                    reviewResultsText = "No review results were returned.";
+                }
+
+                if (data.score) {
+                    scoreDisplay = `<h3>Code Quality Score: ${data.score}/10</h3>`;
+                }
+
+                reviewOutput.innerHTML = scoreDisplay + reviewResultsText;
+                
+                codeOutput.textContent = "This is a comprehensive review of the entire repository. Individual files are not displayed for this type of review.";
+
+                updateProgress(100);
+                setTimeout(() => updateProgress(0), 2000);
+
+            } catch (error) {
+                reviewOutput.textContent = "❌ Error: " + error.message;
+                codeOutput.textContent = "Could not fetch code content.";
+                updateProgress(0);
+                showError("Review failed: " + error.message);
+            }
+        }
+        
+        function logout() {
+            window.location.href = window.location.origin;
+        }
+    </script>
+</body>
+</html>
