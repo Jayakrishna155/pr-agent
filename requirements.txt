@@ -6,3 +6,4 @@ PyGithub
 python-gitlab
 google-generativeai
 jinja2
+gunicorn
