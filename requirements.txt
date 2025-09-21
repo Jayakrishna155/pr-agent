@@ -6,5 +6,3 @@ PyGithub
 python-gitlab
 google-generativeai
 jinja2
-gunicorn
--r https://raw.githubusercontent.com/vercel/lambdas/main/vercel_python_requirements.txt
